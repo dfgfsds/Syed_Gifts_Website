@@ -68,7 +68,7 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
 
 
   const paymentMethod = [
-    { value: "CASH ON DELIVERY" },
+    // { value: "CASH ON DELIVERY" },
     { value: "PAY ON" }
   ]
   const dtdcMethod: any = [
@@ -166,6 +166,8 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
     }
   }, []);
 
+    const RazorPayKey = getVendorDeliveryDetailsData?.data?.data?.vendor_site_details?.payment_gateway_client_id;
+
   const handleCheckout = async () => {
     setLoading(true);
     setErrorMessage('')
@@ -182,7 +184,8 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
           const { payment_order_id, final_price } = paymentAPi.data;
 
           const options = {
-            key: "rzp_live_RaR9fnl73kdFfP",
+            // key: "rzp_live_RaR9fnl73kdFfP",
+            key:RazorPayKey,
             amount: final_price * 100,
             currency: "INR",
             name: "Syed gifts",
@@ -241,7 +244,12 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
         }
 
         // 2. Fetch delivery charge
-        if (user?.data?.contact_number && userId && vendorId) {
+        if (
+          user?.data?.contact_number &&
+          userId &&
+          vendorId &&
+          getPaymentDeliveryPartnerData?.data?.data[0]?.delivery_partner !== "own_delivery"
+        ) {
           const deliveryResponse: any = await getDeliveryChargeApi('', {
             user_id: userId,
             vendor_id: vendorId,
@@ -268,7 +276,7 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
     queryFn: () => getPaymentDeliveryPartnerApi(`${vendorId}`),
     enabled: !!vendorId
   })
-
+console.log(getPaymentDeliveryPartnerData?.data?.data)
 
   useEffect(() => {
     if (data?.data?.length) {
