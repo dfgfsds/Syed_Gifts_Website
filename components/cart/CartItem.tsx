@@ -117,6 +117,7 @@ export default function CartItem({ product, quantity: initialQuantity, onUpdate 
     }
   };
 
+console.log(product)
   return (
     <div className="flex flex-col sm:flex-row gap-4 pb-6 border-b border-border last:border-0 last:pb-0">
       <div className="w-full sm:w-24 h-24 bg-white rounded-md overflow-hidden flex-shrink-0">
@@ -201,21 +202,27 @@ export default function CartItem({ product, quantity: initialQuantity, onUpdate 
             {product?.gift_wrap_price ? <span>₹{product?.gift_wrap_price}</span> : <span></span>}
           </div>
 
-          <div>
-            <label className="text-sm font-medium text-gray-700">Custom Instruction</label>
-            <textarea
-              value={customInstruction}
-              onChange={(e) => {
-                setCustomInstruction(e.target.value);
-              }}
-              onBlur={() => handleGiftWrapUpdate("custom_instruction", customInstruction)}
-              className="w-full border border-gray-300 rounded-md p-2 text-sm mt-1 outline-none focus:ring-2 focus:ring-[#a5291b]"
-              placeholder="Add a message or instruction..."
-              rows={2}
-            />
-          </div>
+          {product?.is_custom_message_required  === true && (
+            <div>
+              <label className="text-sm font-medium text-gray-700">Custom Instruction</label>
+              <textarea
+                value={customInstruction}
+                onChange={(e) => {
+                  setCustomInstruction(e.target.value);
+                }}
+                onBlur={() => handleGiftWrapUpdate("custom_instruction", customInstruction)}
+                className="w-full border border-gray-300 rounded-md p-2 text-sm mt-1 outline-none focus:ring-2 focus:ring-[#a5291b]"
+                placeholder="Add a message or instruction..."
+                rows={2}
+              />
+            </div>
+          )}
+
 
         </div>
+
+            {product?.is_custom_image_required  === true && (
+              <>
         {/* 🖼️ Uploaded Images Section */}
         {product?.uploadImages && product?.uploadImages.image_urls.length > 0 ? (
           <div className="mt-4">
@@ -241,7 +248,6 @@ export default function CartItem({ product, quantity: initialQuantity, onUpdate 
         ) : (
           <p className="text-sm text-gray-500 mt-2">No images uploaded yet.</p>
         )}
-
         {/* 📤 Upload Button (always visible) */}
         <button
           onClick={() => {
@@ -261,6 +267,7 @@ export default function CartItem({ product, quantity: initialQuantity, onUpdate 
         >
           {uploading ? "Uploading..." : "Upload Your Designs"}
         </button>
+        </>)}
       </div>
     </div>
   );
