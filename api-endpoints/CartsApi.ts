@@ -144,7 +144,7 @@ export const postCODPaymentApi = async (query: any, payload: any) => {
 
 // GET ALL COUPONS API
 export const getAllCouponsApi = async (query: any) => {
-    return axios.get(`${ApiUrls.getCoupons}${query}`);
+    return axios.get(`${ApiUrls.coupons}${query}`);
 }
 
 
