@@ -166,73 +166,181 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
     }
   }, []);
 
-    const RazorPayKey = getVendorDeliveryDetailsData?.data?.data?.vendor_site_details?.payment_gateway_client_id;
+  // const RazorPayKey = getVendorDeliveryDetailsData?.data?.data?.vendor_site_details?.payment_gateway_client_id;
+
+  const loadRazorpay = () => {
+    return new Promise((resolve) => {
+      if ((window as any).Razorpay) {
+        resolve(true);
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const RazorPayKey =
+    getVendorDeliveryDetailsData?.data?.data?.vendor_site_details
+      ?.payment_gateway_client_id;
 
   const handleCheckout = async () => {
     setLoading(true);
-    setErrorMessage('')
+    setErrorMessage("");
+
     try {
-      if (paymentValue === 'PAY ON') {
-        const paymentAPi = await postPaymentApi('', {
+      const razorpayLoaded = await loadRazorpay();
+
+      if (!razorpayLoaded) {
+        setErrorMessage(
+          "Payment gateway blocked by browser. Please use Chrome or disable ad-block."
+        );
+        setLoading(false);
+        return;
+      }
+
+      if (paymentValue === "PAY ON") {
+        const paymentApi = await postPaymentApi("", {
           customer_phone: user?.data?.contact_number,
           vendor_id: vendorId,
           user_id: user?.data?.id,
-          dtdc_courier_service_type: dtdcSelectValue
         });
 
-        if (paymentAPi) {
-          const { payment_order_id, final_price } = paymentAPi.data;
+        if (!paymentApi) throw new Error("Payment init failed");
 
-          const options = {
-            // key: "rzp_live_RaR9fnl73kdFfP",
-            key:RazorPayKey,
-            amount: final_price * 100,
-            currency: "INR",
-            name: "Syed gifts",
-            description: "Order Payment",
-            order_id: payment_order_id,
-            handler: function (response: any) {
-              setPaymentSuccess(true);
-            },
-            prefill: {
-              name: user?.data?.name,
-              email: user?.data?.email,
-              contact: user?.data?.contact_number,
-            },
-            notes: {
-              address: "Selected Address",
-            },
-            theme: {
-              color: "#4D8B3180",
-            },
-          };
-          // toast.success("created successfully!");
-          const razor = new (window as any).Razorpay(options);
-          razor.open();
-        }
-      } else {
-        const updateApi = await postCODPaymentApi("",
-          {
-            customer_phone: user?.data?.contact_number,
-            vendor_id: vendorId,
-            user_id: user?.data?.id,
-            dtdc_courier_service_type: dtdcSelectValue
+        const { payment_order_id, final_price } = paymentApi.data;
 
-          }
-        );
+        const options = {
+          key: RazorPayKey,
+          amount: Math.round(final_price * 100),
+          currency: "INR",
+          name: "Syed Gifts",
+          description: "Order Payment",
+          order_id: payment_order_id,
+
+          handler: function (response: any) {
+            setPaymentSuccess(true);
+          },
+
+          modal: {
+            ondismiss: function () {
+              setLoading(false);
+            },
+          },
+
+          prefill: {
+            name: user?.data?.name || "",
+            email: user?.data?.email || "",
+            contact: user?.data?.contact_number || "",
+          },
+
+          notes: {
+            address: "Selected Address",
+          },
+
+          theme: {
+            color: "#4D8B31",
+          },
+        };
+
+        const razorpay = new (window as any).Razorpay(options);
+
+        razorpay.on("payment.failed", function (response: any) {
+          setErrorMessage(response?.error?.description || "Payment failed");
+        });
+
+        razorpay.open();
+      }
+      else {
+        const updateApi = await postCODPaymentApi("", {
+          customer_phone: user?.data?.contact_number,
+          vendor_id: vendorId,
+          user_id: user?.data?.id,
+          dtdc_courier_service_type: dtdcSelectValue,
+        });
+
         if (updateApi) {
           setPaymentSuccess(true);
-
         }
       }
-
-
     } catch (error: any) {
-      setErrorMessage(error?.response?.data?.error || "Failed to initiate payment. Please try again.");
+      setErrorMessage(
+        error?.response?.data?.error ||
+        "Failed to initiate payment. Please try again."
+      );
     } finally {
       setLoading(false);
     }
   };
+
+  // const handleCheckout = async () => {
+  //   setLoading(true);
+  //   setErrorMessage('')
+  //   try {
+  //     if (paymentValue === 'PAY ON') {
+  //       const paymentAPi = await postPaymentApi('', {
+  //         customer_phone: user?.data?.contact_number,
+  //         vendor_id: vendorId,
+  //         user_id: user?.data?.id,
+  //         // dtdc_courier_service_type: dtdcSelectValue
+  //       });
+
+  //       if (paymentAPi) {
+  //         const { payment_order_id, final_price } = paymentAPi.data;
+
+  //         const options = {
+  //           // key: "rzp_live_RaR9fnl73kdFfP",
+  //           key:RazorPayKey,
+  //           amount: final_price * 100,
+  //           currency: "INR",
+  //           name: "Syed gifts",
+  //           description: "Order Payment",
+  //           order_id: payment_order_id,
+  //           handler: function (response: any) {
+  //             setPaymentSuccess(true);
+  //           },
+  //           prefill: {
+  //             name: user?.data?.name,
+  //             email: user?.data?.email,
+  //             contact: user?.data?.contact_number,
+  //           },
+  //           notes: {
+  //             address: "Selected Address",
+  //           },
+  //           theme: {
+  //             color: "#4D8B3180",
+  //           },
+  //         };
+  //         // toast.success("created successfully!");
+  //         const razor = new (window as any).Razorpay(options);
+  //         razor.open();
+  //       }
+  //     } else {
+  //       const updateApi = await postCODPaymentApi("",
+  //         {
+  //           customer_phone: user?.data?.contact_number,
+  //           vendor_id: vendorId,
+  //           user_id: user?.data?.id,
+  //           dtdc_courier_service_type: dtdcSelectValue
+
+  //         }
+  //       );
+  //       if (updateApi) {
+  //         setPaymentSuccess(true);
+
+  //       }
+  //     }
+
+
+  //   } catch (error: any) {
+  //     setErrorMessage(error?.response?.data?.error || "Failed to initiate payment. Please try again.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   useEffect(() => {
     const fetchCartAndDeliveryCharge = async () => {
@@ -276,7 +384,7 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
     queryFn: () => getPaymentDeliveryPartnerApi(`${vendorId}`),
     enabled: !!vendorId
   })
-console.log(getPaymentDeliveryPartnerData?.data?.data)
+
 
   useEffect(() => {
     if (data?.data?.length) {
@@ -325,7 +433,7 @@ console.log(getPaymentDeliveryPartnerData?.data?.data)
   })
 
   const availableCoupons = getAllCouponsData?.data?.data?.data
-
+  console.log(getAllCouponsData?.data?.data?.data, "getAllCouponsData");
 
   const handleRemoveCoupon = async () => {
     setCouponloader(true);
