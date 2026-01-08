@@ -117,7 +117,7 @@ export default function CartItem({ product, quantity: initialQuantity, onUpdate 
     }
   };
 
-console.log(product)
+  console.log(product)
   return (
     <div className="flex flex-col sm:flex-row gap-4 pb-6 border-b border-border last:border-0 last:pb-0">
       <div className="w-full sm:w-24 h-24 bg-white rounded-md overflow-hidden flex-shrink-0">
@@ -202,7 +202,7 @@ console.log(product)
             {product?.gift_wrap_price ? <span>₹{product?.gift_wrap_price}</span> : <span></span>}
           </div>
 
-          {product?.is_custom_message_required  === true && (
+          {product?.is_custom_message_required === true && (
             <div>
               <label className="text-sm font-medium text-gray-700">Custom Instruction</label>
               <textarea
@@ -221,53 +221,53 @@ console.log(product)
 
         </div>
 
-            {product?.is_custom_image_required  === true && (
-              <>
-        {/* 🖼️ Uploaded Images Section */}
-        {product?.uploadImages && product?.uploadImages.image_urls.length > 0 ? (
-          <div className="mt-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Uploaded Images</h3>
-            <div className="flex flex-wrap gap-3">
-              {product?.uploadImages?.image_urls?.map((img: any, i: number) => (
-                <div key={img.id} className="relative inline-block">
-                  <img
-                    src={img}
-                    alt="Uploaded"
-                    className="w-32 h-32 object-cover rounded-lg border shadow"
-                  />
-                  <button
-                    onClick={() => onRemoveImage(product?.uploadImages?.id, i)}
-                    className="absolute -top-2 -right-2 bg-red-600 text-white p-1 rounded-full shadow hover:bg-red-700"
-                  >
-                    <X size={16} />
-                  </button>
+        {product?.is_custom_image_required === true && (
+          <>
+            {/* 🖼️ Uploaded Images Section */}
+            {product?.uploadImages && product?.uploadImages.image_urls.length > 0 ? (
+              <div className="mt-4">
+                <h3 className="text-sm font-medium text-gray-700 mb-2">Uploaded Images</h3>
+                <div className="flex flex-wrap gap-3">
+                  {product?.uploadImages?.image_urls?.map((img: any, i: number) => (
+                    <div key={img.id} className="relative inline-block">
+                      <img
+                        src={img}
+                        alt="Uploaded"
+                        className="w-32 h-32 object-cover rounded-lg border shadow"
+                      />
+                      <button
+                        onClick={() => onRemoveImage(product?.uploadImages?.id, i)}
+                        className="absolute -top-2 -right-2 bg-red-600 text-white p-1 rounded-full shadow hover:bg-red-700"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <p className="text-sm text-gray-500 mt-2">No images uploaded yet.</p>
-        )}
-        {/* 📤 Upload Button (always visible) */}
-        <button
-          onClick={() => {
-            const input = document.createElement("input");
-            input.type = "file";
-            input.multiple = true; // ✅ Allow multiple uploads
-            input.accept = "image/*";
-            input.onchange = (e: any) => {
-              const files = Array.from(e.target.files);
-              handleUploadRef(files as File[]);
-            };
-            input.click();
-          }}
-          disabled={uploading}
-          className={`mt-3 px-6 py-3 rounded-lg text-white 
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500 mt-2">No images uploaded yet.</p>
+            )}
+            {/* 📤 Upload Button (always visible) */}
+            <button
+              onClick={() => {
+                const input = document.createElement("input");
+                input.type = "file";
+                input.multiple = true; // ✅ Allow multiple uploads
+                input.accept = "image/*";
+                input.onchange = (e: any) => {
+                  const files = Array.from(e.target.files);
+                  handleUploadRef(files as File[]);
+                };
+                input.click();
+              }}
+              disabled={uploading}
+              className={`mt-3 px-6 py-3 rounded-lg text-white 
     ${uploading ? "bg-gray-400 cursor-not-allowed" : "bg-red-600 hover:bg-red-700"}`}
-        >
-          {uploading ? "Uploading..." : "Upload Your Designs"}
-        </button>
-        </>)}
+            >
+              {uploading ? "Uploading..." : "Upload Your Designs"}
+            </button>
+          </>)}
       </div>
     </div>
   );
