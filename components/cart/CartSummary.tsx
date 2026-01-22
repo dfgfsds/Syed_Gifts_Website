@@ -44,7 +44,7 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
   const [couponLoader, setCouponloader] = useState(false);
   // const [totalAmountValue, setTotalAmountValue] = useState(0);
   // const [getWrapCost, setWrapCost] = useState(0);
-
+  console.log(DeliveryChargeValue)
   // useEffect(() => {
   //   if (vendorId) {
   //     getTotalValue();
@@ -140,8 +140,8 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
         queryClient.invalidateQueries(['getAllCouponsData'] as InvalidateQueryFilters);
       }
     } catch (error: any) {
-      // console.log(error)
-      setError("Failed to apply coupon. Please try again.");
+      // console.log(error?.response?.data?.error)
+      setError(error?.response?.data?.error || "Failed to apply coupon. Please try again.");
       // setError("Failed to apply coupon. Please try again.");
     } finally {
       setIsChecking(false);
@@ -361,7 +361,7 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
           const deliveryResponse: any = await getDeliveryChargeApi('', {
             user_id: userId,
             vendor_id: vendorId,
-            payment_mode: 'cod',
+            payment_mode: '',
             customer_phone: user?.data?.contact_number,
           });
           if (deliveryResponse) {
@@ -439,7 +439,7 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
     setCouponloader(true);
     try {
       const updateAPi = await deleteCouponApi(`${getCartId}/coupon/${getAppliedCouponData?.data?.data?.applied_coupons[0]?.coupon_id}/remove/`
-        , { updated_by: getUserName ? getUserName : 'user' })
+        , { updated_by: 'user' })
       if (updateAPi) {
         setCouponloader(false);
         queryClient.invalidateQueries(['getAppliedCouponDataData'] as InvalidateQueryFilters);
@@ -450,7 +450,7 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
     } catch (error) {
     }
   }
-
+  console.log(getAppliedCouponData?.data?.data)
   return (
     <>
       {data?.data?.length ? (
@@ -535,7 +535,7 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
           </div>
           {getPaymentDeliveryPartnerData?.data?.data[0]?.delivery_partner === "own_delivery" ?
             (<>
-              <div className="space-y-4 font-bold !text-gray-600 mt-1">
+              {/* <div className="space-y-4 font-bold !text-gray-600 mt-1">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Delivery Charge</span>
 
@@ -581,8 +581,23 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
                     })()}
                   </span>
                 </div>
-              </div>
+              </div> */}
+              {DeliveryChargeValue?.data?.final_delivery_charge > 0 && (
+                <div className="space-y-4 font-bold !text-gray-600 mt-1">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Deliver Charge (incl transaction charges)</span>
+                    <span>{formatPrice(Number(DeliveryChargeValue?.data?.final_delivery_charge))}</span>
+                  </div >
+                </div >
+              )}
 
+
+              <div className="space-y-4 font-bold !text-gray-600 mt-1">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Total</span>
+                  <span>{formatPrice(Number(DeliveryChargeValue?.data?.final_price_including_delivery))}</span>
+                </div>
+              </div>
             </>) : (
               <>
                 {
@@ -611,86 +626,193 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
 
         <div className="mt-6 space-y-4">
 
-          {getAppliedCouponData?.data?.data?.applied_coupons?.length ? (
-            <div className="bg-green-50 p-4 rounded-lg space-y-2 flex justify-between">
-              <div>
-                <p className="text-sm text-green-700 font-bold mb-2">
-                  Applied Coupon: {getAppliedCouponData?.data?.data?.data[0]?.code}
-                </p>
-                <p className="text-sm text-green-700 font-bold">
-                  Discount Amount: ₹{getAppliedCouponData?.data?.data?.applied_coupons[0]?.discount || 0}
-                </p>
-              </div>
-              <Button
-                onClick={() => {
-                  handleRemoveCoupon();
-                  setCode(""); // reset code on remove
-                }}
-                variant="outline"
-                className="text-red-600 border-red-300 hover:bg-red-50"
-                disabled={couponLoader}
-              >
-                {couponLoader ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  "Remove Coupon"
-                )}
-                {/* Remove Coupon */}
-              </Button>
-            </div>
-          ) : (
-            <div>
-              <h4 className="font-semibold mb-2">Apply Coupon:</h4>
+          {getAppliedCouponData?.data?.data?.applied_coupons?.length && (
+            <>
+              {getAppliedCouponData?.data?.data?.auto_apply_coupons?.length && (
+                <div>
+                  <p className="text-sm text-green-700 font-bold mb-2">
+                    Applied Coupon: {getAppliedCouponData?.data?.data?.auto_apply_coupons[0]?.code}
+                  </p>
+                  <p className="text-sm text-green-700 font-bold">
+                    {getAppliedCouponData?.data?.data?.auto_apply_coupons[0]?.discount ? (
+                      <>Discount Amount: ₹{getAppliedCouponData.data.data.auto_apply_coupons[0].discount}</>
+                    ) : getAppliedCouponData?.data?.data?.auto_apply_coupons[0]?.delivery_discount ? (
+                      <>Free Delivery</>
+                    ) : null}
+                  </p>
+                </div>
+              )}
 
-              <div className="flex items-center gap-2 mb-2">
-                <Input
-                  type="text"
-                  placeholder="Discount code"
-                  className="bg-white"
-                  value={code}
-                  onChange={(e: any) => setCode(e?.target?.value)}
-                />
-                <Button
-                  disabled={!code || isChecking}
-                  onClick={handleSubmit}
-                  variant="outline"
-                  className="whitespace-nowrap"
-                >
-                  {isChecking ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    "Apply"
-                  )}
-                </Button>
-              </div>
-              {error && <p className="text-sm text-red-600">{error}</p>}
-              {availableCoupons
-                ?.filter((coupon: any) => {
-                  if (!coupon?.allowed_users?.length) return true;
-                  return coupon?.allowed_users?.includes(userId);
-                })
-                ?.map((coupon: any) => (
-                  <div
-                    key={coupon.id}
-                    onClick={() => {
-                      setCode(coupon?.code);
-                    }}
-                    className="cursor-pointer border mb-1 border-gray-200 bg-white rounded-lg p-3 hover:bg-gray-50 transition-all"
-                  >
-                    <div className="flex justify-between">
-                      <span className="font-bold text-[#b39e49]">{coupon?.code}</span>
-                      <span className="text-sm text-gray-600">
-                        {coupon?.discount_type === "percentage"
-                          ? `${coupon?.discount_value}% OFF`
-                          : `₹${coupon?.flat_discount} OFF`}
-                      </span>
+              {/* {getAppliedCouponData?.data?.data?.data?.map((item: any) => ( */}
+              {getAppliedCouponData?.data?.data?.data
+                ?.filter((item: any) => item?.auto_apply !== true)
+                ?.map((item: any) => (
+                  <div className="bg-green-50 p-4 rounded-lg space-y-2 flex justify-between">
+                    <div>
+                      <p className="text-sm text-green-700 font-bold mb-2">
+                        Applied Coupon: {item?.code}
+                      </p>
+                      <p className="text-sm text-green-700 font-bold">
+                        Discount Amount: ₹{item?.discount || 0}
+                      </p>
                     </div>
-                    <p className="text-sm text-gray-500">{coupon?.description}</p>
+                    <Button
+                      onClick={() => {
+                        handleRemoveCoupon();
+                        setCode(""); // reset code on remove
+                      }}
+                      variant="outline"
+                      className="text-red-600 border-red-300 hover:bg-red-50"
+                      disabled={couponLoader}
+                    >
+                      {couponLoader ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        "Remove Coupon"
+                      )}
+                      {/* Remove Coupon */}
+                    </Button>
                   </div>
                 ))}
-
-            </div>
+            </>
           )}
+          {getAppliedCouponData?.data?.data?.applied_coupons?.length < 2 &&
+            (
+              <div>
+                <h4 className="font-semibold mb-2">Apply Coupon:</h4>
+
+                <div className="flex items-center gap-2 mb-2">
+                  <Input
+                    type="text"
+                    placeholder="Discount code"
+                    className="bg-white"
+                    value={code}
+                    onChange={(e: any) => setCode(e?.target?.value)}
+                  />
+                  <Button
+                    disabled={!code || isChecking}
+                    onClick={handleSubmit}
+                    variant="outline"
+                    className="whitespace-nowrap"
+                  >
+                    {isChecking ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      "Apply"
+                    )}
+                  </Button>
+                </div>
+                {error && <p className="text-sm text-red-600 pb-2">{error}</p>}
+                {availableCoupons
+                  ?.filter((item: any) => item?.auto_apply !== true)
+                  ?.filter((coupon: any) => {
+                    if (!coupon?.allowed_users?.length) return true;
+                    return coupon?.allowed_users?.includes(userId);
+                  })
+                  ?.map((coupon: any) => (
+                    <div
+                      key={coupon.id}
+                      onClick={() => {
+                        setCode(coupon?.code);
+                      }}
+                      className="cursor-pointer border mb-1 border-gray-200 bg-white rounded-lg p-3 hover:bg-gray-50 transition-all"
+                    >
+                      <div className="flex justify-between">
+                        <span className="font-bold text-[#b39e49]">{coupon?.code}</span>
+                        <span className="text-sm text-gray-600">
+
+                          {coupon?.discount_type === "delivery" &&
+                            String(coupon?.delivery_discount).includes('%') ? (
+                            `${coupon?.delivery_discount} OFF`
+                          ) : (
+                            `₹${coupon?.delivery_discount} Maximum discount`
+                          )
+                          }
+
+                          {coupon?.discount_type !== "delivery" &&
+                            <>
+                              {coupon?.discount_type === "percentage"
+                                ? `${coupon?.discount_value}% OFF`
+                                : `₹${coupon?.flat_discount} OFF`}
+                            </>
+                          }
+
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-500">{coupon?.description}</p>
+                    </div>
+                  ))}
+
+              </div>
+            )}
+
+          {/* // : (
+          //   <div>
+          //     <h4 className="font-semibold mb-2">Apply Coupon:</h4>
+
+          //     <div className="flex items-center gap-2 mb-2">
+          //       <Input
+          //         type="text"
+          //         placeholder="Discount code"
+          //         className="bg-white"
+          //         value={code}
+          //         onChange={(e: any) => setCode(e?.target?.value)}
+          //       />
+          //       <Button
+          //         disabled={!code || isChecking}
+          //         onClick={handleSubmit}
+          //         variant="outline"
+          //         className="whitespace-nowrap"
+          //       >
+          //         {isChecking ? (
+          //           <Loader2 className="h-4 w-4 animate-spin" />
+          //         ) : (
+          //           "Apply"
+          //         )}
+          //       </Button>
+          //     </div>
+          //     {error && <p className="text-sm text-red-600 pb-2">{error}</p>}
+          //     {availableCoupons
+          //       ?.filter((coupon: any) => {
+          //         if (!coupon?.allowed_users?.length) return true;
+          //         return coupon?.allowed_users?.includes(userId);
+          //       })
+          //       ?.map((coupon: any) => (
+          //         <div
+          //           key={coupon.id}
+          //           onClick={() => {
+          //             setCode(coupon?.code);
+          //           }}
+          //           className="cursor-pointer border mb-1 border-gray-200 bg-white rounded-lg p-3 hover:bg-gray-50 transition-all"
+          //         >
+          //           <div className="flex justify-between">
+          //             <span className="font-bold text-[#b39e49]">{coupon?.code}</span>
+          //             <span className="text-sm text-gray-600">
+
+          //               {coupon?.discount_type === "delivery" &&
+          //                 String(coupon?.delivery_discount).includes('%') ? (
+          //                 `${coupon?.delivery_discount} OFF`
+          //               ) : (
+          //                 `₹${coupon?.delivery_discount} Maximum discount`
+          //               )
+          //               }
+
+          //               {coupon?.discount_type !== "delivery" &&
+          //                 <>
+          //                   {coupon?.discount_type === "percentage"
+          //                     ? `${coupon?.discount_value}% OFF`
+          //                     : `₹${coupon?.flat_discount} OFF`}
+          //                 </>
+          //               }
+
+          //             </span>
+          //           </div>
+          //           <p className="text-sm text-gray-500">{coupon?.description}</p>
+          //         </div>
+          //       ))}
+
+          //   </div>
+          // )} */}
 
           <div>
             <label>Payment Method</label>
