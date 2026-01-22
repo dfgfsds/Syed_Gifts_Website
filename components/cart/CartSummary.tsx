@@ -435,10 +435,10 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
   const availableCoupons = getAllCouponsData?.data?.data?.data
   console.log(getAllCouponsData?.data?.data?.data, "getAllCouponsData");
 
-  const handleRemoveCoupon = async () => {
+  const handleRemoveCoupon = async (id: any) => {
     setCouponloader(true);
     try {
-      const updateAPi = await deleteCouponApi(`${getCartId}/coupon/${getAppliedCouponData?.data?.data?.applied_coupons[0]?.coupon_id}/remove/`
+      const updateAPi = await deleteCouponApi(`${getCartId}/coupon/${id}/remove/`
         , { updated_by: 'user' })
       if (updateAPi) {
         setCouponloader(false);
@@ -450,7 +450,12 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
     } catch (error) {
     }
   }
-  console.log(getAppliedCouponData?.data?.data)
+
+  const appliedCouponIds =
+    getAppliedCouponData?.data?.data?.applied_coupons
+      ?.map((item: any) => item?.coupon_id) || [];
+
+  console.log(appliedCouponIds, 'jhfgjfgg')
   return (
     <>
       {data?.data?.length ? (
@@ -637,7 +642,7 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
                     {getAppliedCouponData?.data?.data?.auto_apply_coupons[0]?.discount ? (
                       <>Discount Amount: ₹{getAppliedCouponData.data.data.auto_apply_coupons[0].discount}</>
                     ) : getAppliedCouponData?.data?.data?.auto_apply_coupons[0]?.delivery_discount ? (
-                      <>Free Delivery</>
+                      <></>
                     ) : null}
                   </p>
                 </div>
@@ -658,7 +663,7 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
                     </div>
                     <Button
                       onClick={() => {
-                        handleRemoveCoupon();
+                        handleRemoveCoupon(item?.id);
                         setCode(""); // reset code on remove
                       }}
                       variant="outline"
@@ -705,6 +710,7 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
                 {error && <p className="text-sm text-red-600 pb-2">{error}</p>}
                 {availableCoupons
                   ?.filter((item: any) => item?.auto_apply !== true)
+                  ?.filter((coupon: any) => !appliedCouponIds.includes(coupon?.id))
                   ?.filter((coupon: any) => {
                     if (!coupon?.allowed_users?.length) return true;
                     return coupon?.allowed_users?.includes(userId);
