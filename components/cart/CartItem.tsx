@@ -203,19 +203,34 @@ export default function CartItem({ product, quantity: initialQuantity, onUpdate 
           </div>
 
           {product?.is_custom_message_required === true && (
-            <div>
-              <label className="text-sm font-medium text-gray-700">Custom Instruction</label>
-              <textarea
-                value={customInstruction}
-                onChange={(e) => {
-                  setCustomInstruction(e.target.value);
-                }}
-                onBlur={() => handleGiftWrapUpdate("custom_instruction", customInstruction)}
-                className="w-full border border-gray-300 rounded-md p-2 text-sm mt-1 outline-none focus:ring-2 focus:ring-[#a5291b]"
-                placeholder="Add a message or instruction..."
-                rows={2}
-              />
-            </div>
+            <>
+              {product?.required_data_for_product && (
+                <div className="mt-4 space-y-2">
+                  <p className="text-sm font-semibold text-gray-800">
+                    Required Data for this Product
+                  </p>
+                  <div className="rounded-md border border-dashed border-[#a5291b] bg-red-50 p-3">
+                    <p className="text-xs text-gray-700 leading-relaxed">
+                      {product?.required_data_for_product}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="text-sm font-medium text-gray-700">Custom Instruction</label>
+                <textarea
+                  value={customInstruction}
+                  onChange={(e) => {
+                    setCustomInstruction(e.target.value);
+                  }}
+                  onBlur={() => handleGiftWrapUpdate("custom_instruction", customInstruction)}
+                  className="w-full border border-gray-300 rounded-md p-2 text-sm mt-1 outline-none focus:ring-2 focus:ring-[#a5291b]"
+                  placeholder="Add a message or instruction..."
+                  rows={2}
+                />
+              </div>
+            </>
           )}
 
 
@@ -249,24 +264,28 @@ export default function CartItem({ product, quantity: initialQuantity, onUpdate 
               <p className="text-sm text-gray-500 mt-2">No images uploaded yet.</p>
             )}
             {/* 📤 Upload Button (always visible) */}
-            <button
-              onClick={() => {
-                const input = document.createElement("input");
-                input.type = "file";
-                input.multiple = true; // ✅ Allow multiple uploads
-                input.accept = "image/*";
-                input.onchange = (e: any) => {
-                  const files = Array.from(e.target.files);
-                  handleUploadRef(files as File[]);
-                };
-                input.click();
-              }}
-              disabled={uploading}
-              className={`mt-3 px-6 py-3 rounded-lg text-white 
+            {product?.uploadImages?.image_urls?.length === product?.custom_image_limit ?
+              "" :
+              (
+                <button
+                  onClick={() => {
+                    const input = document.createElement("input");
+                    input.type = "file";
+                    input.multiple = true; // ✅ Allow multiple uploads
+                    input.accept = "image/*";
+                    input.onchange = (e: any) => {
+                      const files = Array.from(e.target.files);
+                      handleUploadRef(files as File[]);
+                    };
+                    input.click();
+                  }}
+                  disabled={uploading}
+                  className={`mt-3 px-6 py-3 rounded-lg text-white 
     ${uploading ? "bg-gray-400 cursor-not-allowed" : "bg-red-600 hover:bg-red-700"}`}
-            >
-              {uploading ? "Uploading..." : "Upload Your Designs"}
-            </button>
+                >
+                  {uploading ? "Uploading..." : "Upload Your Designs"}
+                </button>
+              )}
           </>)}
       </div>
     </div>
