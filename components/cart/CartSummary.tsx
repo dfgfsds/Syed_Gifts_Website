@@ -44,7 +44,7 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
   const [couponLoader, setCouponloader] = useState(false);
   // const [totalAmountValue, setTotalAmountValue] = useState(0);
   // const [getWrapCost, setWrapCost] = useState(0);
-  console.log(DeliveryChargeValue)
+  console.log(DeliveryChargeValue, '12345')
   // useEffect(() => {
   //   if (vendorId) {
   //     getTotalValue();
@@ -342,41 +342,86 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
   //   }
   // };
 
-  useEffect(() => {
-    const fetchCartAndDeliveryCharge = async () => {
-      try {
-        // 1. Fetch cart data
+
+  // useEffect(() => {
+  //   const fetchCartAndDeliveryCharge = async () => {
+  //     try {
+  //       // 1. Fetch cart data
+  //       const cartResponse: any = await getCartApi(getCartId);
+  //       if (cartResponse) {
+  //         setCartItem(cartResponse);
+  //       }
+
+  //       // 2. Fetch delivery charge
+  //       if (
+  //         user?.data?.contact_number &&
+  //         userId &&
+  //         vendorId &&
+  //         getPaymentDeliveryPartnerData?.data?.data[0]?.delivery_partner !== "own_delivery"
+  //       ) {
+  //         const deliveryResponse: any = await getDeliveryChargeApi('', {
+  //           user_id: userId,
+  //           vendor_id: vendorId,
+  //           payment_mode: '',
+  //           customer_phone: user?.data?.contact_number,
+  //         });
+  //         if (deliveryResponse) {
+  //           setDeliveryChargeValue(deliveryResponse);
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.error("Error in cart/delivery API:", error);
+  //     }
+  //   };
+
+  //   if (getCartId) {
+  //     fetchCartAndDeliveryCharge();
+  //   }
+  // }, [getCartId, userId, vendorId, user?.data?.contact_number]);
+
+  const fetchCartAndDeliveryCharge = async () => {
+    try {
+      // Fetch cart
+      if (getCartId) {
         const cartResponse: any = await getCartApi(getCartId);
         if (cartResponse) {
           setCartItem(cartResponse);
         }
-
-        // 2. Fetch delivery charge
-        if (
-          user?.data?.contact_number &&
-          userId &&
-          vendorId &&
-          getPaymentDeliveryPartnerData?.data?.data[0]?.delivery_partner !== "own_delivery"
-        ) {
-          const deliveryResponse: any = await getDeliveryChargeApi('', {
-            user_id: userId,
-            vendor_id: vendorId,
-            payment_mode: '',
-            customer_phone: user?.data?.contact_number,
-          });
-          if (deliveryResponse) {
-            setDeliveryChargeValue(deliveryResponse);
-          }
-        }
-      } catch (error) {
-        console.error("Error in cart/delivery API:", error);
       }
-    };
 
+      const deliveryPartner =
+        getPaymentDeliveryPartnerData?.data?.data?.[0]?.delivery_partner;
+
+      // Fetch delivery charge (not own delivery)
+      if (
+        user?.data?.contact_number &&
+        userId &&
+        vendorId &&
+        deliveryPartner !== "own_delivery"
+      ) {
+        const deliveryResponse: any = await getDeliveryChargeApi("", {
+          user_id: userId,
+          vendor_id: vendorId,
+          payment_mode: "",
+          customer_phone: user?.data?.contact_number,
+        });
+
+        if (deliveryResponse) {
+          setDeliveryChargeValue(deliveryResponse);
+        }
+      }
+    } catch (error) {
+      console.error("Error in cart/delivery API:", error);
+    }
+  };
+
+  useEffect(() => {
     if (getCartId) {
       fetchCartAndDeliveryCharge();
     }
   }, [getCartId, userId, vendorId, user?.data?.contact_number]);
+
+
 
   // getPaymentDeliveryPartnerApi
   const getPaymentDeliveryPartnerData: any = useQuery({
@@ -433,7 +478,6 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
   })
 
   const availableCoupons = getAllCouponsData?.data?.data?.data
-  console.log(getAllCouponsData?.data?.data?.data, "getAllCouponsData");
 
   const handleRemoveCoupon = async (id: any) => {
     setCouponloader(true);
@@ -441,6 +485,7 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
       const updateAPi = await deleteCouponApi(`${getCartId}/coupon/${id}/remove/`
         , { updated_by: 'user' })
       if (updateAPi) {
+        fetchCartAndDeliveryCharge();
         setCouponloader(false);
         queryClient.invalidateQueries(['getAppliedCouponDataData'] as InvalidateQueryFilters);
         if (onUpdate) onUpdate();
@@ -536,7 +581,7 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
         <div className="space-y-4">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Subtotal</span>
-            <span>{formatPrice(totalAmountValue)}</span>
+            <span>{formatPrice(DeliveryChargeValue?.data?.product_total)}</span>
           </div>
           {getPaymentDeliveryPartnerData?.data?.data[0]?.delivery_partner === "own_delivery" ?
             (<>
@@ -730,7 +775,7 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
                     >
                       <div className="flex justify-between">
                         <span className="font-bold text-[#b39e49]">{coupon?.code}</span>
-                        <span className="text-sm text-gray-600">
+                        {/* <span className="text-sm text-gray-600">
 
                           {coupon?.discount_type === "delivery" &&
                             String(coupon?.delivery_discount).includes('%') ? (
@@ -748,7 +793,24 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
                             </>
                           }
 
+                        </span> */}
+                        <span className="text-sm text-gray-600">
+                          {coupon?.discount_type === "delivery" ? (
+                            coupon?.delivery_discount &&
+                              String(coupon.delivery_discount).includes("%") ? (
+                              `${coupon.delivery_discount} OFF`
+                            ) : (
+                              `Maximum discount ₹${coupon?.delivery_discount}`
+                            )
+                          ) : (
+                            <>
+                              {coupon?.discount_type === "percentage"
+                                ? `${coupon?.discount_value}% OFF`
+                                : `₹${coupon?.flat_discount} OFF`}
+                            </>
+                          )}
                         </span>
+
                       </div>
                       <p className="text-sm text-gray-500">{coupon?.description}</p>
                     </div>
