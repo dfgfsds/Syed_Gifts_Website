@@ -633,7 +633,7 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
 
           {getAppliedCouponData?.data?.data?.applied_coupons?.length && (
             <>
-              {getAppliedCouponData?.data?.data?.auto_apply_coupons?.length && (
+              {/* {getAppliedCouponData?.data?.data?.auto_apply_coupons?.length && (
                 <div>
                   <p className="text-sm text-green-700 font-bold mb-2">
                     Applied Coupon: {getAppliedCouponData?.data?.data?.auto_apply_coupons[0]?.code}
@@ -646,37 +646,42 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
                     ) : null}
                   </p>
                 </div>
-              )}
+              )} */}
 
               {/* {getAppliedCouponData?.data?.data?.data?.map((item: any) => ( */}
               {getAppliedCouponData?.data?.data?.data
-                ?.filter((item: any) => item?.auto_apply !== true)
+                // ?.filter((item: any) => item?.auto_apply !== true)
                 ?.map((item: any) => (
                   <div className="bg-green-50 p-4 rounded-lg space-y-2 flex justify-between">
                     <div>
                       <p className="text-sm text-green-700 font-bold mb-2">
                         Applied Coupon: {item?.code}
                       </p>
-                      <p className="text-sm text-green-700 font-bold">
-                        Discount Amount: ₹{item?.discount || 0}
-                      </p>
-                    </div>
-                    <Button
-                      onClick={() => {
-                        handleRemoveCoupon(item?.id);
-                        setCode(""); // reset code on remove
-                      }}
-                      variant="outline"
-                      className="text-red-600 border-red-300 hover:bg-red-50"
-                      disabled={couponLoader}
-                    >
-                      {couponLoader ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        "Remove Coupon"
+                      {item?.discount_type !== "delivery" && (
+                        <p className="text-sm text-green-700 font-bold">
+                          Discount Amount: ₹{item?.discount_value || 0}
+                        </p>
                       )}
-                      {/* Remove Coupon */}
-                    </Button>
+
+                    </div>
+                    {item?.auto_apply !== true && (
+                      <Button
+                        onClick={() => {
+                          handleRemoveCoupon(item?.id);
+                          setCode(""); // reset code on remove
+                        }}
+                        variant="outline"
+                        className="text-red-600 border-red-300 hover:bg-red-50"
+                        disabled={couponLoader}
+                      >
+                        {couponLoader ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          "Remove Coupon"
+                        )}
+                      </Button>
+                    )}
+
                   </div>
                 ))}
             </>
