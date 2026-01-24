@@ -37,7 +37,7 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
   const [dtdcSelectValue, setDtdcSelectValue] = useState('');
   const [dtdcErrorMessage, setDtdcErrorMessage] = useState('');
   const [dtdcLoader, setDtdcLoader] = useState(false);
-  const [paymentValue, setPaymentValue] = useState('')
+  const [paymentValue, setPaymentValue] = useState('PAY ON')
   const [dtdcDeliveryCharge, setDtdcDeliveryCharge] = useState<any>();
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [addressError, setAddressError] = useState<any>('');
@@ -137,6 +137,7 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
       const updateApi = await postApplyCouponApi("", payload);
       if (updateApi) {
         if (onUpdate) onUpdate();
+        await fetchCartAndDeliveryCharge();
         queryClient.invalidateQueries(['getAllCouponsData'] as InvalidateQueryFilters);
       }
     } catch (error: any) {
@@ -389,15 +390,15 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
         }
       }
 
-      const deliveryPartner =
-        getPaymentDeliveryPartnerData?.data?.data?.[0]?.delivery_partner;
+      // const deliveryPartner =
+      //   getPaymentDeliveryPartnerData?.data?.data?.[0]?.delivery_partner;
 
       // Fetch delivery charge (not own delivery)
       if (
         user?.data?.contact_number &&
         userId &&
-        vendorId &&
-        deliveryPartner !== "own_delivery"
+        vendorId
+        // deliveryPartner !== "own_delivery"
       ) {
         const deliveryResponse: any = await getDeliveryChargeApi("", {
           user_id: userId,
@@ -485,7 +486,7 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
       const updateAPi = await deleteCouponApi(`${getCartId}/coupon/${id}/remove/`
         , { updated_by: 'user' })
       if (updateAPi) {
-        fetchCartAndDeliveryCharge();
+        await fetchCartAndDeliveryCharge();
         setCouponloader(false);
         queryClient.invalidateQueries(['getAppliedCouponDataData'] as InvalidateQueryFilters);
         if (onUpdate) onUpdate();
@@ -632,22 +633,91 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
                   </span>
                 </div>
               </div> */}
-              {DeliveryChargeValue?.data?.final_delivery_charge > 0 && (
+              {/* {DeliveryChargeValue?.data?.final_delivery_charge > 0 && (
                 <div className="space-y-4 font-bold !text-gray-600 mt-1">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Deliver Charge (incl transaction charges)</span>
                     <span>{formatPrice(Number(DeliveryChargeValue?.data?.final_delivery_charge))}</span>
                   </div >
                 </div >
-              )}
+              )} */}
+              <div className="space-y-4 font-bold text-gray-600 mt-1">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">
+                    Delivery Charge (incl transaction charges)
+                  </span>
+
+                  {Number(DeliveryChargeValue?.data?.final_delivery_charge) > 0 ? (
+                    <div className="flex items-center gap-2">
+                      {/* Old delivery charge – strike through */}
+                      <span className="line-through text-gray-400 text-sm">
+                        {formatPrice(Number(DeliveryChargeValue?.data?.delivery_charge))}
+                      </span>
+
+                      {/* Final delivery charge */}
+                      <span className="text-gray-800">
+                        {formatPrice(Number(DeliveryChargeValue?.data?.final_delivery_charge))}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      {/* Old delivery charge – strike */}
+                      <span className="line-through text-gray-400 text-sm">
+                        {formatPrice(Number(DeliveryChargeValue?.data?.delivery_charge))}
+                      </span>
+
+                      {/* Free */}
+                      <span className="text-green-600 font-bold">
+                        FREE
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* {getAppliedCouponData?.data?.data?.data
+                ?.filter((item: any) => item?.discount_type !== "delivery")
+                ?.map((item: any) => (
+                  <div className="flex justify-between text-green-500">
+                    <span className="text-green-500">{item?.code}</span>
+                    <span>- {formatPrice(item?.discount_value)}</span>
+                  </div>
+                ))} */}
+
+              {getAppliedCouponData?.data?.data?.data
+                ?.filter((item: any) => item?.discount_type !== "delivery")
+                ?.map((item: any) => (
+                  <div
+                    key={item?.id}
+                    className="flex justify-between items-center text-sm text-green-600 mt-2"
+                  >
+                    <span className="font-medium">
+                      Coupon <span className="text-green-700">({item?.code})</span>
+                    </span>
+                    <span className="font-semibold">
+                      - {formatPrice(item?.discount_value)}
+                    </span>
+                  </div>
+                ))}
 
 
-              <div className="space-y-4 font-bold !text-gray-600 mt-1">
+              {/* <div className="space-y-4 font-bold !text-gray-600 mt-1">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total</span>
                   <span>{formatPrice(Number(DeliveryChargeValue?.data?.final_price_including_delivery))}</span>
                 </div>
+              </div> */}
+              <div className="mt-4 pt-4 border-t border-dashed border-gray-300">
+                <div className="flex justify-between items-center">
+                  <span className="text-base font-semibold text-gray-700">
+                    Total Payable
+                  </span>
+                  <span className="text-lg font-bold text-gray-900">
+                    {formatPrice(Number(DeliveryChargeValue?.data?.final_price_including_delivery))}
+                  </span>
+                </div>
               </div>
+
             </>) : (
               <>
                 {
