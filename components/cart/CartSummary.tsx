@@ -17,7 +17,7 @@ import OrderSuccessModal from './OrderSucessModal';
 import axios from 'axios';
 import { baseUrl } from '@/api-endpoints/ApiUrls';
 
-export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost, onUpdate }: any) {
+export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost, onUpdate, refreshTrigger }: any) {
 
   const [userId, setUserId] = useState<string | null>(null);
   const [getCartId, setCartId] = useState<string | null>(null);
@@ -420,7 +420,7 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
     if (getCartId) {
       fetchCartAndDeliveryCharge();
     }
-  }, [getCartId, userId, vendorId, user?.data?.contact_number]);
+  }, [getCartId, userId, vendorId, user?.data?.contact_number, refreshTrigger]);
 
 
 
@@ -501,7 +501,10 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
     getAppliedCouponData?.data?.data?.applied_coupons
       ?.map((item: any) => item?.coupon_id) || [];
 
-  console.log(appliedCouponIds, 'jhfgjfgg')
+  const deliveryCharge = Number(DeliveryChargeValue?.data?.delivery_charge);
+  const finalDeliveryCharge = Number(DeliveryChargeValue?.data?.final_delivery_charge);
+  const hasDiscount = deliveryCharge > finalDeliveryCharge;
+
   return (
     <>
       {data?.data?.length ? (
@@ -649,15 +652,27 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
 
                   {Number(DeliveryChargeValue?.data?.final_delivery_charge) > 0 ? (
                     <div className="flex items-center gap-2">
-                      {/* Old delivery charge – strike through */}
-                      <span className="line-through text-gray-400 text-sm">
+
+                      {/* <span className="line-through text-gray-400 text-sm">
                         {formatPrice(Number(DeliveryChargeValue?.data?.delivery_charge))}
                       </span>
 
-                      {/* Final delivery charge */}
                       <span className="text-gray-800">
                         {formatPrice(Number(DeliveryChargeValue?.data?.final_delivery_charge))}
+                      </span> */}
+
+                      {/* Old delivery charge – show only if discount exists */}
+                      {hasDiscount && (
+                        <span className="line-through text-gray-400 text-sm">
+                          {formatPrice(deliveryCharge)}
+                        </span>
+                      )}
+
+                      {/* Final delivery charge – always show */}
+                      <span className="text-gray-800">
+                        {formatPrice(finalDeliveryCharge)}
                       </span>
+
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
@@ -746,7 +761,7 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
 
         <div className="mt-6 space-y-4">
 
-          {getAppliedCouponData?.data?.data?.applied_coupons?.length && (
+          {getAppliedCouponData?.data?.data?.applied_coupons?.length ? (
             <>
               {/* {getAppliedCouponData?.data?.data?.auto_apply_coupons?.length && (
                 <div>
@@ -764,8 +779,8 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
               )} */}
 
               {/* {getAppliedCouponData?.data?.data?.data?.map((item: any) => ( */}
+
               {getAppliedCouponData?.data?.data?.data
-                // ?.filter((item: any) => item?.auto_apply !== true)
                 ?.map((item: any) => (
                   <div className="bg-green-50 p-4 rounded-lg space-y-2 flex justify-between">
                     <div>
@@ -800,7 +815,9 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
                   </div>
                 ))}
             </>
-          )}
+          ) : ''}
+
+
           {getAppliedCouponData?.data?.data?.applied_coupons?.length < 2 &&
             (
               <div>
