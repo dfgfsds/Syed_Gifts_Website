@@ -24,6 +24,13 @@ export default function CartPage() {
 
   const [totalAmountValue, setTotalAmountValue] = useState(0);
   const [getWrapCost, setWrapCost] = useState(0);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const triggerCartRefresh = () => {
+    setRefreshTrigger(prev => prev + 1);
+    getTotalValue(); // already irukka calculation
+  };
+
 
   useEffect(() => {
     if (vendorId) {
@@ -149,7 +156,7 @@ export default function CartPage() {
                       }))
                       ?.sort((a: any, b: any) => a?.sortName?.localeCompare(b?.sortName))
                       ?.map((product: any, index: any) => (
-                        <CartItem key={product.id} product={product} quantity={index + 1}  onUpdate={getTotalValue} />
+                        <CartItem key={product.id} product={product} quantity={index + 1}  onUpdate={triggerCartRefresh}/>
                       ))}
                   </div>
                 </div>
@@ -157,7 +164,7 @@ export default function CartPage() {
             </div>
 
             <div className="lg:col-span-1">
-              <CartSummary totalAmount={totalAmount} totalAmountValue={totalAmountValue} getWrapCost={getWrapCost} onUpdate={getTotalValue} />
+              <CartSummary totalAmount={totalAmount} totalAmountValue={totalAmountValue} getWrapCost={getWrapCost} onUpdate={getTotalValue}  refreshTrigger={refreshTrigger}/>
             </div>
           </div>
         )}

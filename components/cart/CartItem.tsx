@@ -60,11 +60,12 @@ export default function CartItem({ product, quantity: initialQuantity, onUpdate 
         updated_by: "user",
         product: product?.id,
       });
-      setLoading(false);
-      queryClient.invalidateQueries(["getCartitemsData"] as InvalidateQueryFilters);
-      toast.success("Cart item updated!");
-      // ✅ Trigger parent refresh
-      if (onUpdate) onUpdate();
+      if (res) {
+        if (onUpdate) onUpdate();
+        setLoading(false);
+        queryClient.invalidateQueries(["getCartitemsData"] as InvalidateQueryFilters);
+        toast.success("Cart item updated!");
+      }
     } catch (error) {
       setLoading(false);
       toast.error("Failed to update gift wrap or instruction");
