@@ -44,7 +44,7 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
   const [couponLoader, setCouponloader] = useState(false);
   // const [totalAmountValue, setTotalAmountValue] = useState(0);
   // const [getWrapCost, setWrapCost] = useState(0);
-  console.log(DeliveryChargeValue, '12345')
+
   // useEffect(() => {
   //   if (vendorId) {
   //     getTotalValue();
@@ -503,7 +503,7 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
 
   const deliveryCharge = Number(DeliveryChargeValue?.data?.delivery_charge);
   const finalDeliveryCharge = Number(DeliveryChargeValue?.data?.final_delivery_charge);
-  const hasDiscount = deliveryCharge > finalDeliveryCharge;
+  const hasDiscount = Number(deliveryCharge) > Number(finalDeliveryCharge);
 
   return (
     <>
@@ -652,16 +652,6 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
 
                   {Number(DeliveryChargeValue?.data?.final_delivery_charge) > 0 ? (
                     <div className="flex items-center gap-2">
-
-                      {/* <span className="line-through text-gray-400 text-sm">
-                        {formatPrice(Number(DeliveryChargeValue?.data?.delivery_charge))}
-                      </span>
-
-                      <span className="text-gray-800">
-                        {formatPrice(Number(DeliveryChargeValue?.data?.final_delivery_charge))}
-                      </span> */}
-
-                      {/* Old delivery charge – show only if discount exists */}
                       {hasDiscount && (
                         <span className="line-through text-gray-400 text-sm">
                           {formatPrice(deliveryCharge)}
@@ -689,6 +679,13 @@ export default function CartSummary({ totalAmount, totalAmountValue, getWrapCost
                   )}
                 </div>
               </div>
+              {DeliveryChargeValue?.data?.total_gift_wrap_price > 0 ?
+                (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Gift Wrap Price</span>
+                    <span>{formatPrice(DeliveryChargeValue?.data?.total_gift_wrap_price)}</span>
+                  </div>
+                ) : ''}
 
               {/* {getAppliedCouponData?.data?.data?.data
                 ?.filter((item: any) => item?.discount_type !== "delivery")

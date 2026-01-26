@@ -44,7 +44,11 @@ export default function CartItem({ product, quantity: initialQuantity, onUpdate 
   const handleRemoveItem = async (id: any) => {
     try {
       const updateApi = await deleteCartitemsApi(`${id}`);
-      if (updateApi) queryClient.invalidateQueries(["getCartitemsData"] as InvalidateQueryFilters);
+      if (updateApi) {
+        onUpdate();
+        queryClient.invalidateQueries(["getCartitemsData"] as InvalidateQueryFilters);
+
+      }
     } catch (error: any) {
       toast.error(error?.response?.data?.error);
     }
@@ -118,7 +122,7 @@ export default function CartItem({ product, quantity: initialQuantity, onUpdate 
     }
   };
 
-  console.log(product)
+
   return (
     <div className="flex flex-col sm:flex-row gap-4 pb-6 border-b border-border last:border-0 last:pb-0">
       <div className="w-full sm:w-24 h-24 bg-white rounded-md overflow-hidden flex-shrink-0">
