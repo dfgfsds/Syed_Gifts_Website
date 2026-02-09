@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { ShoppingBag, User, Menu, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MobileMenu from './MobileMenu';
-import logo from '../../public/img/logo.jpeg'
+import logo from '../../public/img/new_logo.jpeg'
 import { useEffect, useState } from 'react';
 import { useCartItem } from '@/context/CartItemContext';
 import { usePathname } from 'next/navigation';
