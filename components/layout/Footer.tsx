@@ -8,7 +8,7 @@ import Img2 from '../../public/img/img-2.png'; // Leaf top-right
 import Img3 from '../../public/img/img-3.png'; // Leaf mid-right
 import Img5 from '../../public/img/img-1.png'; // Lime
 import Img7 from '../../public/img/img-2.png'; // Pear
-import logo from '../../public/img/logo.jpeg'
+import logo from '../../public/img/new_logo.jpeg'
 import { getVendorDeliveryDetailsApi } from '@/api-endpoints/authendication';
 import { useQuery } from '@tanstack/react-query';
 import { useVendor } from '@/context/VendorContext';
