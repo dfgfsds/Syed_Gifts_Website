@@ -20,12 +20,22 @@ import { useVendor } from '@/context/VendorContext';
 
 
 // Register GSAP ScrollTrigger
-gsap.registerPlugin(ScrollTrigger);
+// gsap.registerPlugin(ScrollTrigger);
 
 export default function HeroSection() {
   const [banners, setBanners] = useState<any[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMobile, setIsMobile] = useState<boolean | null>(null);
+
+  const isInstagram = /Instagram/i.test(navigator.userAgent);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    // GSAP code here
+  }, []);
 
 
   // Refs for GSAP parallax animation
@@ -53,12 +63,23 @@ export default function HeroSection() {
   }, []);
 
   // 📱 Detect mobile view
+  // useEffect(() => {
+  //   const checkMobile = () => setIsMobile(window.innerWidth < 768);
+  //   checkMobile();
+  //   window.addEventListener('resize', checkMobile);
+  //   return () => window.removeEventListener('resize', checkMobile);
+  // }, []);
+
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
 
 
   // 🌀 Auto slide every 5s
