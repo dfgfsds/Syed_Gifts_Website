@@ -36,8 +36,16 @@ export default function ProductInfo({ product, cartDetails, getUserId, getCartId
       vendor: vendorId,
       quantity: qty,
       created_by: getUserName ? getUserName : 'user',
-      ...(selectedVariant?.product_variant_title ? { product_variant: selectedVariant?.id } : selectedVariant?.product_size ? { product_size: selectedVariant?.id }
-        : selectedVariant?.id ? { product: selectedVariant?.id } : ''),
+      // ...(selectedVariant?.product_variant_title ? { product_variant: selectedVariant?.id } : selectedVariant?.product_size ? { product_size: selectedVariant?.id }
+      //   : selectedVariant?.id ? { product: selectedVariant?.id } : ''),
+      ...(selectedVariant?.product_variant_title
+        ? { product_variant: selectedVariant?.id }
+        : selectedVariant?.product_size
+          ? { product_size: selectedVariant?.id }
+          : selectedVariant?.id
+            ? { product: selectedVariant?.id }
+            : ''),
+
     };
 
     try {
@@ -95,10 +103,17 @@ export default function ProductInfo({ product, cartDetails, getUserId, getCartId
       </div>
 
 
-      <div
+      {/* <div
         className="text-muted-foreground"
         dangerouslySetInnerHTML={{ __html: product?.description }}
-      />
+      /> */}
+      {product?.description && (
+        <div
+          className="text-muted-foreground"
+          dangerouslySetInnerHTML={{ __html: product.description }}
+        />
+      )}
+
 
 
       {/* {product?.variants && product?.variants?.length > 0 && (

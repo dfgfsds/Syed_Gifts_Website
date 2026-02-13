@@ -49,6 +49,10 @@ export default function ProductPageClient({ id }: any) {
 
   const totalQty = matchingData?.reduce((sum: number, item: any) => sum + (item?.cartQty || 0), 0);
 
+  if (!productDetails) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <>
 

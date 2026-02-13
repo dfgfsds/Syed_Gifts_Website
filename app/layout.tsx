@@ -33,7 +33,11 @@ export default function RootLayout({
           src="https://checkout.razorpay.com/v1/checkout.js"
           strategy="beforeInteractive"
         />
-        <Script id="fb-pixel" strategy="afterInteractive">
+        <Script id="fb-pixel"
+        //  strategy="afterInteractive"
+        strategy="lazyOnload"
+
+         >
           {`
             !function(f,b,e,v,n,t,s)
             {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
