@@ -41,7 +41,9 @@ export default function ProductGallery({ product }: { product: any }) {
     }
   };
 
-  const activeImage = images[activeIndex];
+  // const activeImage = images[activeIndex];
+  const activeImage = images?.[activeIndex] ?? 'https://semantic-ui.com/images/wireframe/image.png';
+
 
   return (
     <div className="space-y-4">
